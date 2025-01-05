@@ -91,6 +91,14 @@ export default function Home() {
     }
   };
 
+
+  useEffect(() => {
+    // Reset booking data when returning to the form page
+    if (showSummary) {
+      setBookingData(null); 
+    }
+  }, [showSummary]); 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -116,11 +124,30 @@ export default function Home() {
         const data = await response.json();
         setBookingData(data);
         setShowSummary(true);
+        // setDate(undefined);  
+        // setSelectedTime(undefined);
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error creating booking:', error);
     }
   };
+
+  // if (showSummary && bookingData) {
+  //   return (<BookingSummary booking={bookingData} onClose={() =>{
+  //         setShowSummary(false);
+  //         setBookingData(null); 
+  //       }
+  //     } 
+  //   />
+  // );
+  // }
+
+  useEffect(() => {
+    if (bookingData) {
+      console.log("Booking confirmed:", bookingData);  // Log booking data
+    }
+  }, [bookingData]);
 
   // Return an array of time slots that are already booked for a specific date
   const disabledTimeSlots = (date: Date | undefined) => {
@@ -130,6 +157,16 @@ export default function Home() {
   };
 
   return (
+    <>
+    {showSummary && bookingData ? (
+      <BookingSummary 
+        booking={bookingData} 
+        onClose={() => {
+          setShowSummary(false);  
+          setBookingData(null);    
+        }} 
+      />
+    ) : (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center mb-8">
@@ -150,11 +187,10 @@ export default function Home() {
                 selected={date}
                 onSelect={setDate}
                 className="rounded-md border"
-                onDayClick={handleDateClick} // Corrected event handler
+                onDayClick={handleDateClick} 
               />      
             </div>
 
-            {/* Display selected date's bookings */}
             {selectedDate && (
               <div className="bookings-list mt-4">
                 <h3>Bookings for {format(selectedDate, "yyyy-MM-dd")}</h3>
@@ -262,5 +298,7 @@ export default function Home() {
         </div>
       </div>
     </div>
+    )}
+  </>
   );
 }
