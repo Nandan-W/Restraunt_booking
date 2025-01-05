@@ -37,9 +37,33 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/date', async (req, res) => {
+  const { date } = req.query;
+
+  if (!date) {
+    return res.status(400).json({ error: 'Date is required' });
+  }
+
   try {
-    const bookings = await Booking.find();
+    const parsedDate = new Date(date);
+
+    if (isNaN(parsedDate)) {
+      return res.status(400).json({ error: 'Invalid date format' });
+    }
+
+    const startOfDay = new Date(parsedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(parsedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const bookings = await Booking.find({
+      date: {
+        $gte: startOfDay,
+        $lt: endOfDay,
+      },
+    });
+
     res.json(bookings);
   } 
   catch (error) {
@@ -70,4 +94,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-module.exports = bookingsRouter = router;
+module.exports = router;

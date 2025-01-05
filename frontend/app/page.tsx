@@ -57,15 +57,29 @@ export default function Home() {
     return acc;
   }, {});
 
-  // disabled times for a specific day
-  const handleDateClick = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd");
-    setSelectedDate(date); // Setting the clicked date as selected
+  const handleDateClick = async (date: Date) => {
+    const dateString = format(date, "yyyy-MM-dd"); 
 
-    if (bookingsByDate[dateString]) {
-      setBookedTimes(bookingsByDate[dateString]); // Get all bookings for the selected date
-    } 
-    else {
+    setSelectedDate(date);
+  
+    try {
+      
+      const response = await fetch(`${API_URL}/api/bookings/date?date=${dateString}`);
+      console.log("response", response);
+      if (response.ok) {
+        const data = await response.json();
+  
+        console.log("Fetched bookings:", data); 
+        
+        setBookedTimes(data || []);
+
+      } else {
+        // case if no data is returned or if there is an error
+        console.error('Error fetching bookings for the selected date.');
+        setBookedTimes([]); 
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
       setBookedTimes([]); 
     }
   };
@@ -92,12 +106,12 @@ export default function Home() {
   };
 
 
-  useEffect(() => {
-    // Reset booking data when returning to the form page
-    if (showSummary) {
-      setBookingData(null); 
-    }
-  }, [showSummary]); 
+  // useEffect(() => {
+  //   // Reset booking data when returning to the form page
+  //   if (showSummary) {
+  //     setBookingData(null); 
+  //   }
+  // }, [showSummary]); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +140,9 @@ export default function Home() {
         setShowSummary(true);
         // setDate(undefined);  
         // setSelectedTime(undefined);
+
+
+        
       }
     } 
     catch (error) {
@@ -163,7 +180,14 @@ export default function Home() {
         booking={bookingData} 
         onClose={() => {
           setShowSummary(false);  
-          setBookingData(null);    
+          setBookingData(null);   
+          
+        //   setName("");
+        // setEmail("");
+        // setPhone("");
+        // setGuests("2");
+        // setSelectedTime(undefined);
+        // setDate(new Date());
         }} 
       />
     ) : (
@@ -216,7 +240,6 @@ export default function Home() {
           </Card>
 
           <Card className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
@@ -226,8 +249,10 @@ export default function Home() {
                   selectedTime={selectedTime}
                   onTimeSelect={setSelectedTime}
                   disabledTimeSlots={disabledTimeSlots(selectedDate)} 
+                  
                 />
               </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
