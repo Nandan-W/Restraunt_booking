@@ -10,9 +10,6 @@
         "use": "@vercel/next"
       }
     ],
-    "scripts": {
-        "build": "npm run build && ls -l frontend/dist"
-    },
     "routes": [
       {
         "src": "/api/(.*)",
